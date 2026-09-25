@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+/* Fuente del sistema operativo en vez de una descargada de Google Fonts (ver layout.tsx) -
+   nada que bajar de la red, carga instantanea. */
+@theme inline {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    monospace;
+}
+
+/* Nota: el color de fondo y de texto del body se definen con clases de Tailwind
+   directamente en layout.tsx (bg-slate-50, text-slate-900), no aqui - una regla CSS
+   "body { ... }" en este archivo, al no estar dentro de una @layer de Tailwind, le
+   ganaria en especificidad a esas clases de utilidad sin importar el orden. */

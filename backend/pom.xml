@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- "parent" le dice a Maven: "hereda toda la configuracion base de Spring Boot 3.3" -->
+    <!-- Gracias a esto, no tenemos que especificar la version de cada libreria de Spring por separado. -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.4</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.revaisor</groupId>
+    <artifactId>cleardraft-backend</artifactId>
+    <version>0.1.0</version>
+    <name>cleardraft-backend</name>
+    <description>Backend de ClearDraft - generador de contenido + revisor de gobernanza</description>
+
+    <properties>
+        <java.version>21</java.version>
+    </properties>
+
+    <dependencies>
+        <!-- spring-boot-starter-web: trae todo lo necesario para exponer endpoints REST
+             (embebe un servidor Tomcat, Jackson para JSON, etc.) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- Nota: NO agregamos spring-boot-starter-webflux. El cliente HTTP que usamos
+             para hablarle a OpenAI (RestClient) ya viene incluido en spring-boot-starter-web,
+             y es sincrono (mas facil de razonar que la alternativa reactiva WebClient). -->
+
+        <!-- Validacion de los DTOs que llegan en el body de la request (@NotBlank, etc.) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- Persistencia: Spring Data JPA + base de datos H2 en memoria (bonus de storage) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Dependencias solo para tests -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Este plugin es el que permite `mvn spring-boot:run` y empaqueta un .jar ejecutable -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>
