@@ -5,6 +5,12 @@ revisa automáticamente el borrador con una segunda pasada de IA que evalúa ton
 sin sustento, disclaimers faltantes y sesgo — como tener un redactor y un oficial de
 gobernanza trabajando en serie.
 
+La interfaz y la salida de la IA son bilingües (español/inglés): un solo botón en el
+header (arriba a la derecha) controla los dos idiomas a la vez, para que una demo en
+cualquiera de los dos quede consistente de punta a punta (ver `language` en
+[Variables de entorno](#variables-de-entorno) y el detalle en
+[Decisiones de diseño](#decisiones-de-diseño)).
+
 Proyecto técnico para el proceso de RevAIsor. Frontend en Next.js, backend en Spring
 Boot, integración de IA generativa vía la API de OpenAI (funciona con cualquier
 proveedor compatible con el formato de Chat Completions).
@@ -40,7 +46,7 @@ peticiones (ver `FRONTEND_ORIGIN` abajo).
 
 | Variable | Requerida | Default | Descripción |
 |---|---|---|---|
-| `OPENAI_API_KEY` | Sí | — | La clave de tu proveedor de IA. Sin esta, el backend arranca pero cualquier request a `/api/draft` falla. |
+| `OPENAI_API_KEY` | Sí | — | La clave de tu proveedor de IA. Sin esta, el backend **no arranca**: falla al crear el bean `OpenAiClient` con `Could not resolve placeholder 'OPENAI_API_KEY'` (no llega a fallar recien en el primer request, como podría sugerir el nombre de la variable). |
 | `OPENAI_API_BASE_URL` | No | `https://api.openai.com/v1` | Útil para apuntar a un proveedor compatible distinto. |
 | `OPENAI_MODEL` | No | `gpt-4o-mini` | El modelo a usar. |
 | `FRONTEND_ORIGIN` | No | `http://localhost:3000` | Origen permitido por CORS. |
@@ -50,12 +56,17 @@ backend — Spring Boot las lee directamente del entorno, ver `application.prope
 
 ### Frontend (`frontend/`)
 
-Copia `frontend/.env.local.example` a `frontend/.env.local` (ya viene creado con el
-valor por defecto):
-
 | Variable | Requerida | Default | Descripción |
 |---|---|---|---|
 | `NEXT_PUBLIC_API_URL` | No | `http://localhost:8080` | URL del backend. |
+
+**Para correr en local no hace falta crear ningún archivo.** El código
+(`frontend/src/lib/api.ts`) ya cae en `http://localhost:8080` si la variable no está
+seteada - que es exactamente el default de esta tabla. Solo se necesita un
+`frontend/.env.local` con `NEXT_PUBLIC_API_URL=...` si el backend corre en otra URL
+(por ejemplo, ya desplegado en internet en vez de en tu máquina). Ese archivo nunca se
+sube al repo a propósito (ver `.gitignore`, `.env*`), asi que hay que crearlo a mano
+cuando haga falta.
 
 ## Cómo correrlo localmente
 
