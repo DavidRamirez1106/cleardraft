@@ -45,13 +45,13 @@ public class DraftService {
         Preset preset = Preset.fromId(request.preset());
 
         // --- Paso 1: generar el borrador ---
-        String generatorPrompt = preset.buildGeneratorPrompt(request.brief(), request.tone());
+        String generatorPrompt = preset.buildGeneratorPrompt(request.brief(), request.tone(), request.language());
         String draft = openAiClient.complete(generatorPrompt, false);
 
         // --- Paso 2: revisar el borrador ---
         // OJO: el prompt del revisor recibe `draft` (lo que acabamos de generar), NUNCA
         // el brief original. Es la decision de diseno central de todo el proyecto.
-        String reviewerPrompt = PresetPrompts.buildReviewerPrompt(draft);
+        String reviewerPrompt = PresetPrompts.buildReviewerPrompt(draft, request.language());
         String reviewJson = openAiClient.complete(reviewerPrompt, true);
         ReviewResult review = parseReview(reviewJson);
 

@@ -25,6 +25,14 @@ public record DraftRequest(
         @NotBlank(message = "brief es requerido")
         String brief,
 
-        String tone // opcional: si no viene, usamos un valor por defecto en el servicio
+        String tone, // opcional: si no viene, usamos un valor por defecto en el servicio
+
+        // Opcional: "es" | "en", el boton de idioma de la interfaz (ver
+        // PromptLanguage.java). Si viene, forzamos ese idioma en los 2 prompts que le
+        // mandamos al modelo; si no viene (o trae un codigo que no reconocemos), el
+        // modelo sigue el idioma del brief solo - el comportamiento de antes de que
+        // existiera el boton, asi un cliente viejo (o el curl de ejemplo del README)
+        // sigue funcionando igual sin este campo.
+        String language
 ) {
 }

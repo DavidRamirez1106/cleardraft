@@ -1,3 +1,4 @@
+import type { Translations } from "./i18n";
 import type { ApiError, DraftRequest, DraftResponse, InteractionSummary } from "./types";
 
 // NEXT_PUBLIC_ es un prefijo especial de Next.js: cualquier variable de entorno que
@@ -12,8 +13,18 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
  * Manda el brief al backend y espera el borrador + la revision.
  * Lanza un Error con un mensaje legible si el backend responde un error - lo capturamos
  * en el componente que llama a esta funcion para mostrarlo en la UI.
+ *
+ * `t` es el diccionario del idioma activo (ver lib/i18n.ts), solo para el mensaje de
+ * fallback cuando el backend no manda un `message` propio. OJO: el `message` que SI
+ * manda el backend (validaciones de Bean Validation, "Preset desconocido: ...", etc.)
+ * esta hardcodeado en espanol del lado del backend - traducir esos mensajes de error
+ * tambien requeriria i18n en el backend (Spring MessageSource), que quedo fuera del
+ * alcance de este cambio.
  */
-export async function fetchDraft(request: DraftRequest): Promise<DraftResponse> {
+export async function fetchDraft(
+  request: DraftRequest,
+  t: Translations
+): Promise<DraftResponse> {
   const response = await fetch(`${API_BASE_URL}/api/draft`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -22,7 +33,7 @@ export async function fetchDraft(request: DraftRequest): Promise<DraftResponse> 
 
   if (!response.ok) {
     const errorBody: ApiError | null = await response.json().catch(() => null);
-    throw new Error(errorBody?.message ?? `El servidor respondió con estado ${response.status}`);
+    throw new Error(errorBody?.message ?? t.errors.serverStatus(response.status));
   }
 
   return response.json();

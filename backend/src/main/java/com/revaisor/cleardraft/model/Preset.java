@@ -55,10 +55,29 @@ public enum Preset {
     /**
      * Arma el prompt final insertando el tono y el brief del usuario en la plantilla.
      * %s y %s se reemplazan en orden: el primero por el tono, el segundo por el brief.
+     *
+     * Le agregamos una instruccion final de idioma. Sin esto, el modelo (siguiendo el
+     * ingles del resto del prompt) tiende a contestar en ingles sin importar en que
+     * idioma haya escrito el usuario - un bug real que reportaron al probar la app con
+     * briefs en espanol.
+     *
+     * `language` es el codigo del boton de idioma de la interfaz ("es" | "en", ver
+     * DraftRequest.language). Si viene uno reconocido, lo forzamos explicitamente -
+     * asi el usuario puede tipear el brief en un idioma y pedir el borrador en otro, y
+     * sobre todo, asi una demo en ingles (boton en "en") no depende de que el usuario
+     * se acuerde de escribir el brief en ingles. Si no viene (null, o un codigo que no
+     * reconocemos), caemos al comportamiento anterior: que el modelo siga el idioma
+     * del brief solo.
      */
-    public String buildGeneratorPrompt(String brief, String tone) {
+    public String buildGeneratorPrompt(String brief, String tone, String language) {
         String effectiveTone = (tone == null || tone.isBlank()) ? "professional" : tone;
-        return promptTemplate.formatted(effectiveTone, brief);
+        String base = promptTemplate.formatted(effectiveTone, brief);
+        String forcedLanguage = PromptLanguage.displayName(language);
+        String instruction = forcedLanguage != null
+                ? "Write your entire response in " + forcedLanguage
+                        + ", regardless of the language of the brief above."
+                : "Write your entire response in the same language the brief above is written in.";
+        return base + " " + instruction;
     }
 
     /**

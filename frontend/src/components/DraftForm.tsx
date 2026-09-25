@@ -13,6 +13,8 @@
 
 import { useState, type FormEvent } from "react";
 import { PRESETS, TONES } from "@/lib/presets";
+import { presetLabel, toneLabel } from "@/lib/i18n";
+import { useLanguage } from "@/lib/language-context";
 import type { DraftRequest } from "@/lib/types";
 
 interface DraftFormProps {
@@ -21,6 +23,13 @@ interface DraftFormProps {
 }
 
 export default function DraftForm({ onSubmit, loading }: DraftFormProps) {
+  // Este componente ya era "use client" (maneja su propio estado), asi que consumir el
+  // Context de idioma directo aca - en vez de recibirlo por props desde page.tsx, como
+  // hacemos con ResultPanel/HistoryList - no agrega ningun costo nuevo. Ademas nos
+  // conviene: `language` es justo lo que hace falta mandar en el request (ver
+  // handleSubmit), asi que evitamos duplicar esa lectura en el padre.
+  const { t, language } = useLanguage();
+
   // useState es el hook basico de React para guardar datos que, al cambiar, hacen que
   // el componente se vuelva a renderizar. Cada campo del formulario tiene el suyo.
   const [preset, setPreset] = useState(PRESETS[0].id);
@@ -32,14 +41,14 @@ export default function DraftForm({ onSubmit, loading }: DraftFormProps) {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); // evita que el navegador recargue la pagina al enviar el form
     if (!briefIsValid || loading) return;
-    onSubmit({ preset, tone, brief: brief.trim() });
+    onSubmit({ preset, tone, brief: brief.trim(), language });
   }
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div>
         <label htmlFor="preset" className="block text-sm font-medium text-slate-700 mb-1">
-          Tipo de contenido
+          {t.form.presetLabel}
         </label>
         <select
           id="preset"
@@ -49,7 +58,7 @@ export default function DraftForm({ onSubmit, loading }: DraftFormProps) {
         >
           {PRESETS.map((option) => (
             <option key={option.id} value={option.id}>
-              {option.label}
+              {presetLabel(t, option.id)}
             </option>
           ))}
         </select>
@@ -57,7 +66,7 @@ export default function DraftForm({ onSubmit, loading }: DraftFormProps) {
 
       <div>
         <label htmlFor="tone" className="block text-sm font-medium text-slate-700 mb-1">
-          Tono
+          {t.form.toneLabel}
         </label>
         <select
           id="tone"
@@ -67,7 +76,7 @@ export default function DraftForm({ onSubmit, loading }: DraftFormProps) {
         >
           {TONES.map((option) => (
             <option key={option} value={option}>
-              {option}
+              {toneLabel(t, option)}
             </option>
           ))}
         </select>
@@ -75,18 +84,18 @@ export default function DraftForm({ onSubmit, loading }: DraftFormProps) {
 
       <div>
         <label htmlFor="brief" className="block text-sm font-medium text-slate-700 mb-1">
-          Brief
+          {t.form.briefLabel}
         </label>
         <textarea
           id="brief"
           value={brief}
           onChange={(e) => setBrief(e.target.value)}
           rows={4}
-          placeholder="Ej: invitar a un cliente a renovar su plan, tono cercano pero profesional"
+          placeholder={t.form.briefPlaceholder}
           className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
         />
         {!briefIsValid && brief.length > 0 && (
-          <p className="mt-1 text-sm text-red-600">El brief no puede estar vacío.</p>
+          <p className="mt-1 text-sm text-red-600">{t.form.briefRequired}</p>
         )}
       </div>
 
@@ -95,7 +104,7 @@ export default function DraftForm({ onSubmit, loading }: DraftFormProps) {
         disabled={!briefIsValid || loading}
         className="rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300"
       >
-        {loading ? "Generando…" : "Generar"}
+        {loading ? t.form.submitLoading : t.form.submitIdle}
       </button>
     </form>
   );

@@ -37,11 +37,30 @@ public final class PresetPrompts {
               "summary": "..."
             }
 
+            Keep every JSON key, and the literal values of "risk_level" and "type", exactly
+            as specified above and in English - those are fixed codes the caller parses
+            programmatically, not natural-language text. For "excerpt", "explanation" and
+            "summary", %s
+
             Draft to review:
             %s
             """;
 
-    public static String buildReviewerPrompt(String draft) {
-        return REVIEWER_TEMPLATE.formatted(draft);
+    /**
+     * `language` es el mismo codigo de idioma que recibe Preset.buildGeneratorPrompt
+     * ("es" | "en", el boton de la interfaz - ver DraftRequest.language). Cuando viene
+     * uno reconocido, lo forzamos: como el borrador que estamos revisando ya salio
+     * forzado en ese mismo idioma (Preset usa el mismo codigo), esto simplemente
+     * mantiene coherencia en vez de dejarlo "adivinar" de nuevo. Si no viene, caemos al
+     * comportamiento anterior: que el revisor siga el idioma del borrador que le
+     * pasamos, citando "excerpt" tal cual para que coincida naturalmente.
+     */
+    public static String buildReviewerPrompt(String draft, String language) {
+        String forcedLanguage = PromptLanguage.displayName(language);
+        String instruction = forcedLanguage != null
+                ? "write in " + forcedLanguage + ", regardless of the language of the draft below."
+                : "write in the SAME language as the draft below (quote \"excerpt\" verbatim "
+                        + "from the draft, so it will naturally match its language).";
+        return REVIEWER_TEMPLATE.formatted(instruction, draft);
     }
 }

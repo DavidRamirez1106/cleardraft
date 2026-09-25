@@ -1,5 +1,6 @@
 package com.revaisor.cleardraft.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.revaisor.cleardraft.dto.DraftRequest;
 import com.revaisor.cleardraft.dto.DraftResponse;
 import com.revaisor.cleardraft.dto.InteractionSummary;
@@ -30,10 +31,16 @@ public class DraftController {
 
     private final DraftService draftService;
     private final InteractionRepository interactionRepository;
+    private final ObjectMapper objectMapper;
 
-    public DraftController(DraftService draftService, InteractionRepository interactionRepository) {
+    public DraftController(
+            DraftService draftService,
+            InteractionRepository interactionRepository,
+            ObjectMapper objectMapper
+    ) {
         this.draftService = draftService;
         this.interactionRepository = interactionRepository;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -50,7 +57,7 @@ public class DraftController {
     public List<InteractionSummary> getHistory() {
         return interactionRepository.findTop10ByOrderByCreatedAtDesc()
                 .stream()
-                .map(InteractionSummary::from)
+                .map(interaction -> InteractionSummary.from(interaction, objectMapper))
                 .toList();
     }
 }

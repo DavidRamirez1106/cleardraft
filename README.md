@@ -72,8 +72,13 @@ Debería quedar escuchando en `http://localhost:8080`. Probar con:
 ```bash
 curl -X POST http://localhost:8080/api/draft \
   -H "Content-Type: application/json" \
-  -d '{"preset":"outreach_email","brief":"invitar a un cliente a renovar su plan","tone":"friendly"}'
+  -d '{"preset":"outreach_email","brief":"invitar a un cliente a renovar su plan","tone":"friendly","language":"es"}'
 ```
+
+`language` es opcional ("es" | "en"): si se manda, fuerza ese idioma en el borrador y
+en el reporte de revisión sin importar en qué idioma esté escrito el brief. Si se omite
+(como en cualquier cliente viejo, o si lo borrás del `curl` de arriba), el modelo sigue
+el idioma del brief solo.
 
 **2. Frontend** (en otra terminal):
 
@@ -110,6 +115,17 @@ Abrir `http://localhost:3000`.
   este proyecto.
 - **`response_format: json_object` en el prompt revisor**: le pedimos al modelo JSON
   estricto para poder deserializarlo directamente, en vez de parsear texto libre.
+- **Un solo código de idioma (`language`, "es" | "en") controla interfaz Y salida de la
+  IA**: el botón ES/EN del frontend (`LanguageProvider`, ver
+  `frontend/src/lib/language-context.tsx`) traduce toda la UI *y* se manda en cada
+  `POST /api/draft` para forzar el idioma del borrador y de la revisión (ver
+  `PromptLanguage.java`). Se descartó tener 2 selectores separados (uno para la
+  interfaz, otro para la IA) porque podían quedar desincronizados sin que el usuario lo
+  notara. Sin este campo, el backend cae al comportamiento anterior: detectar el idioma
+  a partir del brief.
+- **Diccionario plano en vez de una librería de i18n**: con solo 2 idiomas fijos
+  (`frontend/src/lib/i18n.ts`), `next-intl`/`i18next` habrían sido una dependencia y una
+  capa de configuración de más para el problema que hay que resolver.
 
 ## Limitaciones conocidas / fuera de alcance
 
@@ -120,3 +136,7 @@ de construir):
 - Sin Docker/docker-compose ni CI configurado.
 - Sin autenticación de usuarios.
 - El historial (H2 en memoria) no persiste entre reinicios del backend.
+- Los mensajes de error que vienen directo del backend (validaciones, "Preset
+  desconocido: ...") quedan en español sin importar el idioma elegido en la interfaz -
+  traducirlos requeriría i18n del lado del backend (Spring `MessageSource`), fuera del
+  alcance de este cambio.
